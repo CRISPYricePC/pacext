@@ -29,8 +29,9 @@ usage() {
     echo " "
     echo "options:"
     echo "-h, --help                    show this help"
+    echo "-p, --whatprovides <file>     get info on the package that provides a given file"
+    echo "-r, --whatrequires <package>  get a list of packages that depend on this package"
     echo "-a, --autoremove [package]    remove unused dependencies"
-    echo "-w, --whatprovides <file>     get info on the package that provides a given file"
     exit 0
 }
 
