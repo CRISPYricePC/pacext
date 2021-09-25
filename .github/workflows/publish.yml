@@ -12,6 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
+      - name: Generate PKGBUILD
+        run: ./ci/aur/generate-pkgbuild.sh
       - name: Publish to AUR
         uses: KSXGitHub/github-actions-deploy-aur@v2.2.5
         with:
