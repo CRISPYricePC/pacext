@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 # Pacman extensions by Ben Mitchell <bjosephmitchell@gmail.com>
 
@@ -34,8 +34,28 @@ usage() {
     exit 0
 }
 
+# Displays packages as if they were searched for in pacman
+displaypackages() {
+    while read LINE
+    do
+        if [[ $LINE == *"Name"* ]]; then
+            printf "\e[1m$LINE\e[0m" | sed "s/Name *: *//g"
+        fi
+        if [[ $LINE == *"Version"* ]]; then
+            printf " \e[1;32m$LINE\e[0m" | sed "s/Version *: *//g"
+        fi
+        if [[ $LINE == *"Description"* ]]; then
+            printf "\n    $LINE\n" | sed "s/Description *: *//g"
+        fi
+    done < "${1:-/dev/stdin}"
+}
+
 whatprovides() {
-    exec $PACMAN -Qoq "$@" | $PACMAN -Qi -
+    exec $PACMAN -Qoq "$@" | $PACMAN -Qi - | displaypackages
+}
+
+whatrequires() {
+    $PACMAN -Qi systemd | grep "Required By" | sed "s/Required By *: //g;s/  /\n/g" | $PACMAN -Qi - | displaypackages
 }
 
 autoremove() {
@@ -46,9 +66,13 @@ case "$1" in
     -h|--help)
         usage
         ;;
-    -w|--whatprovides)
+    -p|--whatprovides)
         shift
         whatprovides "$@"
+        ;;
+    -r|--whatrequires)
+        shift
+        whatrequires "$@"
         ;;
     -a|--autoremove)
         shift
