@@ -32,6 +32,7 @@ usage() {
     echo "-p, --whatprovides <file>     get info on the package that provides a given file"
     echo "-r, --whatrequires <package>  get a list of packages that depend on this package"
     echo "-a, --autoremove [package]    remove unused dependencies"
+    echo "-k, --check-kernel            checks loaded kernel version against installed one"
     exit 0
 }
 
@@ -56,11 +57,29 @@ whatprovides() {
 }
 
 whatrequires() {
-    $PACMAN -Qi "$@" | grep "Required By" | sed "s/Required By *: //g;s/  /\n/g" | $PACMAN -Qi - | displaypackages
+    $PACMAN -Qi "$@" | grep "Required By" | sed "s/Required By *: //g;s/  /\n/g" | $PACMAN -Qi - | exec displaypackages
 }
 
 autoremove() {
     exec $PACMAN -Qdtq $@ | $ROOT_CMD $PACMAN -Rs -
+}
+
+check-kernel() {
+    KERNEL_VERSION=$(pacman -Qi linux | grep Version | sed "s/Version * : *//g;s/.arch/-arch/g")
+    LOADED_VERSION=$(uname -r)
+
+    printf "\e[1mKernel Version\e[0m : $KERNEL_VERSION\n"
+    printf "\e[1mLoaded Version\e[0m : $LOADED_VERSION\n"
+    printf "\e[1mMatched\e[0m        : "
+
+    if [ $KERNEL_VERSION = $LOADED_VERSION ]
+    then
+        printf "\e[1;32mYes\e[0m\n"
+        exit 0
+    else
+        printf "\e[1;31mNo\e[0m\n"
+        exit 1
+    fi
 }
 
 case "$1" in
@@ -78,6 +97,9 @@ case "$1" in
     -a|--autoremove)
         shift
         autoremove "$@"
+        ;;
+    -k|--check-kernel)
+        check-kernel
         ;;
     *)
         break
