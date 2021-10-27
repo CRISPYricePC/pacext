@@ -57,7 +57,7 @@ whatprovides() {
 }
 
 whatrequires() {
-    $PACMAN -Qi "$@" | grep "Required By" | sed "s/Required By *: //g;s/  /\n/g" | $PACMAN -Qi - | displaypackages
+    $PACMAN -Qi "$@" | grep "Required By" | sed "s/Required By *: //g;s/  /\n/g;s/None//g" | $PACMAN -Qi - | displaypackages
 }
 
 autoremove() {
