@@ -102,6 +102,7 @@ case "$1" in
         check-kernel
         ;;
     *)
-        break
+        printf "\e[1;31mInvalid Command\e[0m: $1\n\n"
+        usage
         ;;
 esac
