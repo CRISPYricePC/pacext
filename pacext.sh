@@ -30,6 +30,7 @@ usage() {
     echo "options:"
     echo "-h, --help                    show this help"
     echo "-p, --whatprovides <file>     get info on the package that provides a given file"
+    echo "-d, --whatdepends <package>   get a list of packages that this package depends on"
     echo "-r, --whatrequires <package>  get a list of packages that depend on this package"
     echo "-a, --autoremove [package]    remove unused dependencies"
     echo "-k, --check-kernel            checks loaded kernel version against installed one"
@@ -54,6 +55,10 @@ displaypackages() {
 
 whatprovides() {
     exec $PACMAN -Qoq "$@" | $PACMAN -Qi - | displaypackages
+}
+
+whatdepends() {
+    $PACMAN -Qi "$@" | grep "Depends On" | sed "s/Depends On *: //g;s/  /\n/g;s/None//g" | $PACMAN -Qi - | displaypackages
 }
 
 whatrequires() {
@@ -89,6 +94,10 @@ case "$1" in
     -p|--whatprovides)
         shift
         whatprovides "$@"
+        ;;
+    -d|--whatdepends)
+        shift
+        whatdepends "$@"
         ;;
     -r|--whatrequires)
         shift
