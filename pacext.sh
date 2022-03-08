@@ -58,11 +58,11 @@ whatprovides() {
 }
 
 whatdepends() {
-    $PACMAN -Qi "$@" | grep "Depends On" | sed "s/Depends On *: //g;s/  /\n/g;s/None//g" | $PACMAN -Qi - | displaypackages
+    $PACMAN -Qi "$@" | awk -F'[:]' '/^Depends/ {print $2}' | xargs -n1 | $PACMAN -Qi - | displaypackages
 }
 
 whatrequires() {
-    $PACMAN -Qi "$@" | grep "Required By" | sed "s/Required By *: //g;s/  /\n/g;s/None//g" | $PACMAN -Qi - | displaypackages
+    $PACMAN -Qi "$@" | awk -F'[:]' '/^Required/ {print $2}' | xargs -n1 | $PACMAN -Qi - | displaypackages
 }
 
 autoremove() {
