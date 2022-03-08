@@ -22,6 +22,9 @@
 ROOT_CMD="${ROOT_CMD:-/usr/bin/sudo}"
 PACMAN="${PACMAN:-/usr/bin/pacman}"
 
+# Force LC_ALL=C
+export LC_ALL=C
+
 usage() {
     echo "pacext - pacman extensions"
     echo " "
