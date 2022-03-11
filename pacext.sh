@@ -32,6 +32,7 @@ usage() {
     echo " "
     echo "options:"
     echo "-h, --help                    show this help"
+    echo "-s, --summary                 show pacman package summary"
     echo "-p, --whatprovides <file>     get info on the package that provides a given file"
     echo "-d, --whatdepends <package>   get a list of packages that this package depends on"
     echo "-r, --whatrequires <package>  get a list of packages that depend on this package"
@@ -56,16 +57,26 @@ displaypackages() {
     done < "${1:-/dev/stdin}"
 }
 
+summary() {
+    printf "Package Summary:\n"
+    printf "Number of packages: %s\n" $(pacman -Qq "$@" | wc -l)
+    printf "Explicitly installed packages: %s\n" $(pacman -Qeq "$@" | wc -l)
+    printf "Total Storage Consumed: %s\n" \
+        $($PACMAN -Qi "$@" | awk '/^Installed Size/{print $4$5}' \
+            | numfmt --from=auto --suffix=B | awk 'BEGIN {sum=0} {sum=sum+$1} END {printf "%.0f\n", sum}' \
+            | numfmt --to=iec-i --suffix=B)
+}
+
 whatprovides() {
-    exec $PACMAN -Qoq "$@" | $PACMAN -Qi - | displaypackages
+    exec $PACMAN -Qoq "$@"
 }
 
 whatdepends() {
-    $PACMAN -Qi "$@" | awk -F'[:]' '/^Depends/ {print $2}' | xargs -n1 | $PACMAN -Qi - | displaypackages
+    $PACMAN -Qi "$@" | awk -F'[:]' '/^Depends/ {print $2}' | xargs -n1
 }
 
 whatrequires() {
-    $PACMAN -Qi "$@" | awk -F'[:]' '/^Required/ {print $2}' | xargs -n1 | $PACMAN -Qi - | displaypackages
+    $PACMAN -Qi "$@" | awk -F'[:]' '/^Required/ {print $2}' | xargs -n1
 }
 
 autoremove() {
@@ -94,17 +105,21 @@ case "$1" in
     -h|--help)
         usage
         ;;
+    -s|--summary)
+        shift
+        summary "$@"
+        ;;
     -p|--whatprovides)
         shift
-        whatprovides "$@"
+        whatprovides "$@" | $PACMAN -Qi - | displaypackages
         ;;
     -d|--whatdepends)
         shift
-        whatdepends "$@"
+        whatdepends "$@" | $PACMAN -Qi - | displaypackages
         ;;
     -r|--whatrequires)
         shift
-        whatrequires "$@"
+        whatrequires "$@" | $PACMAN -Qi - | displaypackages
         ;;
     -a|--autoremove)
         shift
